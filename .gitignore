@@ -1,0 +1,15 @@
+node_modules/
+dist/
+target/
+build/
+.idea/
+*.iml
+*.log
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+.DS_Store
+Thumbs.db
