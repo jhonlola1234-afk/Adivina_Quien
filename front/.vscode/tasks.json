@@ -14,6 +14,22 @@
 			],
 			"isBackground": true,
 			"problemMatcher": []
+		},
+		{
+			"label": "Frontend con backend",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"dev",
+				"--",
+				"--host",
+				"0.0.0.0",
+				"--port",
+				"5174"
+			],
+			"isBackground": true,
+			"problemMatcher": []
 		}
 	]
 }

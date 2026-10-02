@@ -4,8 +4,8 @@ Juego para grupos de 2 a 12 personas. Una categoria por sala, personajes secreto
 
 ## Estructura
 
-- `front/`: frontend React + Vite. Incluye cinco categorias con 20 opciones cada una, sala de espera, tablero de descartes por rival y demostracion de 12 jugadores.
-- `Back/juegos/`: proyecto Java con Spring Boot, Maven y MySQL. Modelos y repositorios iniciales; endpoints y logica del servidor pendientes.
+- `front/`: frontend React + Vite con sala de espera, seleccion secreta, descartes por rival, turnos, acusaciones, reconexion y revancha.
+- `Back/juegos/`: servidor Java 21 + Spring Boot + JPA. Base H2 persistente por defecto; perfil MySQL disponible.
 
 ## Frontend
 
@@ -19,7 +19,7 @@ Validacion: `npm test` y `npm run build`. Consultar [front/README.md](front/READ
 
 ## Backend
 
-Requiere Java 21 y MySQL local con base de datos `adivina_quien`. Revisar `Back/juegos/src/main/resources/application.properties` antes de ejecutar. No publicar contraseñas ni credenciales reales.
+Requiere Java 21. No es necesario instalar MySQL para empezar: H2 guarda datos en `Back/juegos/data/` cuando se arranca desde esa carpeta. Para usar MySQL, consultar [Back/juegos/README.md](Back/juegos/README.md). No publicar contraseñas ni credenciales reales.
 
 En Windows, desde `Back/juegos/`:
 
@@ -29,6 +29,12 @@ En Windows, desde `Back/juegos/`:
 
 ## Estado actual
 
-El frontend es un prototipo local: las salas comunican pestañas del mismo navegador usando BroadcastChannel, no equipos distintos por Internet. El anfitrion debe mantener su pestaña abierta; no hay persistencia ni reconexion. Los secretos locales no tienen seguridad de servidor. Falta implementar e integrar el backend para multijugador real.
+El juego usa el servidor para partidas de 2 a 12 jugadores. Los secretos y los descartes privados se guardan en base de datos. Cada jugador tiene una sesion privada; recargar la misma pestaña recupera la partida. La sala se actualiza cada dos segundos mediante HTTP. El anfitrion puede iniciar y preparar revancha; al abandonar se transfiere el rol. El turno vencido avanza tras tres minutos al consultar el servidor.
+
+Para jugar en red local, iniciar ambos proyectos y usar la direccion Network del frontend con `npm run dev -- --host 0.0.0.0`. Para Internet, todavia hace falta desplegar con HTTPS, origenes permitidos, base persistente y protecciones frente a abuso. No usar el servidor de desarrollo Vite como hosting de produccion.
+
+## Validacion
+
+Backend: `.\mvnw.cmd test` desde `Back/juegos/`. Frontend: `npm test`, `npm run build` y `npm run test:e2e` desde `front/`. E2E requiere backend en 8080 y Chromium instalado con `npx playwright install chromium`. Detalles en [front/README.md](front/README.md) y [Back/juegos/README.md](Back/juegos/README.md).
 
 Las imagenes usan fuentes externas y cuentan con respaldo por nombre cuando no cargan. Revisar licencias y atribuciones antes de publicar el juego.

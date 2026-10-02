@@ -1,26 +1,45 @@
-# Adivina Quien
+# Adivina Quien - Frontend
 
-Frontend React + Vite. Interfaz en blanco, morado y azul para salas de 2 a 12 jugadores.
+React + Vite. Salas reales de 2 a 12 jugadores con backend Spring. Interfaz en blanco, morado y azul.
 
-## Ejecutar
+## Arranque
+
+En una terminal, desde `../Back/juegos/`, ejecutar `./mvnw spring-boot:run` o `.\mvnw.cmd spring-boot:run` en Windows. En otra terminal, desde esta carpeta:
 
 ```sh
 npm install
 npm run dev
-npm test
-npm run build
 ```
 
-## Flujo
+Vite reenvia `/api` a `http://127.0.0.1:8080`. Las peticiones al servidor son HTTP y la sala se actualiza cada dos segundos, no por WebSocket. No se usa BroadcastChannel.
 
-El anfitrion elige una categoria y crea una sala. Cada jugador elige su secreto; pueden repetirse. Todos deben estar listos para iniciar. Las preguntas se hacen en Discord o Teams. Los descartes son privados y separados por rival. Una acusacion correcta elimina solo al rival señalado; una incorrecta consume el turno. Gana el ultimo jugador activo. La demostracion contiene 11 rivales simulados que pasan automaticamente; no responde preguntas ni simula una IA.
+## Partida
 
-## Estado de la conexion
+El anfitrion crea la sala con una categoria. Los jugadores entran por codigo y eligen su secreto; se permiten repetidos. Cuando todos estan listos, el anfitrion inicia. Las preguntas se hacen por Discord o Teams. Los descartes son privados y separados por rival. Acertar elimina solo al rival acusado; fallar consume el turno. Gana el ultimo activo.
 
-Esta version es un prototipo local, NO multijugador por Internet. BroadcastChannel permite conectar pestañas del mismo navegador y origen. El anfitrion mantiene el estado en memoria y debe dejar su pestaña abierta. Los descartes y la partida se pierden al recargar. La salida de un invitado no elimina su plaza; no hay reconexion ni deteccion de desconexiones. No uses esta version para una partida real con secretos sensibles: el anfitrion local posee los secretos y los mensajes pueden inspeccionarse con herramientas del navegador. El estado publico no incluye secretos, pero esto no sustituye autenticacion de servidor.
+Los turnos duran hasta tres minutos. Cerrar una pestaña conserva la plaza para volver; el turno vencido avanza cuando el servidor recibe la siguiente consulta. Salir con el boton revoca la sesion y cuenta como eliminacion durante la partida. El anfitrion se transfiere al salir. En espera puede retirar jugadores que no consultan al servidor durante 30 segundos. Al terminar, el anfitrion puede preparar otra partida con nuevos secretos.
 
-El backend vecino todavia no tiene endpoints funcionales. Para integrar: identidad autenticada por jugador, estado autoritativo y turnos en servidor, capacidad maxima validada atomicamente, seleccion privada sin unicidad, DTO publico sin secretos y endpoint privado para mi secreto, descartes con jugador/rival/personaje, eventos de sala por WebSocket, reconexion y estados de presencia. Nunca devolver entidades Jugador directamente si contienen el personaje secreto. Categorias y personajes deben servirse desde la base de datos, validando que cada secreto pertenezca a la categoria de la sala.
+La sesion se guarda en `sessionStorage`: recargar la misma pestaña recupera sala, secreto y descartes. Si se cierra la pestaña o borra su almacenamiento, puede perderse la credencial y no hay recuperacion por nombre. No compartir ni registrar el token. No duplicar una pestaña para crear otro jugador: abrir una nueva desde la URL o usar otro navegador.
+
+La demostracion es independiente del backend y contiene 11 rivales simulados que pasan sus turnos; no responde preguntas ni simula una IA.
+
+## Red local y despliegue
+
+`npm run dev -- --host 0.0.0.0` expone el frontend en la red local. Compartir la direccion Network que muestra Vite y permitir el puerto del frontend en el firewall, manualmente si es necesario. Cada dispositivo accede al mismo frontend y el proxy llega al backend. No hace falta exponer 8080 directamente. Vite es solo para desarrollo, no publicacion.
+
+Para publicar, servir `dist/` con HTTPS y un proxy `/api` al backend. Si la API esta en otro dominio, configurar `VITE_API_URL` durante el build y `GAME_ALLOWED_ORIGINS` en el backend con el origen exacto del frontend. Las variables `VITE_*` son publicas: nunca colocar contraseñas en ellas. `npm run preview` no incluye el proxy de desarrollo.
+
+## Pruebas
+
+```sh
+npm test
+npm run build
+npx playwright install chromium
+npm run test:e2e
+```
+
+E2E requiere el backend activo en 8080 y usa 5174 para Vite. Incluye tres recorridos con navegadores aislados: partida/revancha, recuperacion/privacidad y limite de sala.
 
 ## Catalogo e imagenes
 
-Cinco categorias de 20 opciones: Dragon Ball, terror, cantantes, famosos y paises. Retratos externos desde Dragon Ball API y miniaturas de Wikipedia/Wikimedia; banderas desde FlagCDN. Algunas miniaturas pueden faltar o estar bloqueadas: las tarjetas conservan nombre e iniciales. Las portadas que no cargan usan el icono de su categoria. Es necesario revisar atribuciones/licencias y alojar activos autorizados antes de publicar. Los nombres no implican afiliacion con sus titulares.
+Cinco categorias de 20 opciones: Dragon Ball, terror, cantantes, famosos y paises. Los IDs del catalogo visual coinciden con el catalogo que valida el backend; al ampliarlo, actualizar ambos y sus pruebas. Retratos externos desde Dragon Ball API y Wikipedia/Wikimedia; banderas desde FlagCDN. Algunas miniaturas faltan: se muestra nombre e iniciales. Revisar atribuciones/licencias antes de publicar.
