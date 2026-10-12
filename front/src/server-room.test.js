@@ -16,8 +16,8 @@ function storage(context) {
 
 const snapshot = revision => ({ room: { code: 'ABC123', revision }, self: { id: 'ana', name: 'Ana', secret: 'paises-0', discards: {} } });
 
-test('catalogo contiene cinco categorias de veinte IDs unicos', () => {
-  assert.equal(categories.length, 5);
+test('catalogo contiene ocho categorias de veinte IDs unicos', () => {
+  assert.equal(categories.length, 8);
   for (const category of categories) {
     assert.equal(category.characters.length, 20);
     assert.equal(new Set(category.characters.map(character => character.id)).size, 20);

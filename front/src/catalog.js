@@ -29,6 +29,24 @@ const entries = {
     codes: ['co', 'mx', 'ar', 'br', 'es', 'fr', 'de', 'it', 'jp', 'cn', 'us', 'ca', 'gb', 'au', 'kr', 'in', 'eg', 'za', 'pe', 'cl'],
     cover: 'https://flagcdn.com/w640/br.png',
   },
+  'series-infantiles': {
+    name: 'Series infantiles', tag: 'TV animada', color: '#f08f3a', icon: 'star',
+    names: ['Bob Esponja', 'Patricio', 'Calamardo', 'Arenita', 'Don Cangrejo', 'Plankton', 'Timmy Turner', 'Cosmo', 'Wanda', 'Tommy Pickles', 'Chuckie Finster', 'Dora', 'Botas', 'Peppa Pig', 'George Pig', 'Blue', 'Steve', 'Gumball', 'Darwin', 'Finn'],
+    wiki: ['SpongeBob SquarePants (character)', 'Patrick Star', 'Squidward Tentacles', 'Sandy Cheeks', 'Mr. Krabs', 'Plankton (SpongeBob)', 'Timmy Turner', 'Cosmo and Wanda', 'Cosmo and Wanda', 'Tommy Pickles', 'Chuckie Finster', 'Dora the Explorer (character)', 'Boots (Dora the Explorer)', 'Peppa Pig (character)', 'George Pig', "Blue's Clues", 'Steve Burns', 'Gumball Watterson', 'Darwin Watterson', 'Finn the Human'],
+    cover: 'https://upload.wikimedia.org/wikipedia/en/3/3b/SpongeBob_SquarePants_character.svg',
+  },
+  filosofos: {
+    name: 'Filósofos importantes', tag: 'Historia del pensamiento', color: '#476d9f', icon: 'globe',
+    names: ['Sócrates', 'Platón', 'Aristóteles', 'Confucio', 'Lao-Tsé', 'Hipatia', 'San Agustín', 'Tomás de Aquino', 'Maquiavelo', 'René Descartes', 'John Locke', 'David Hume', 'Immanuel Kant', 'Georg Hegel', 'Søren Kierkegaard', 'Karl Marx', 'Friedrich Nietzsche', 'Simone de Beauvoir', 'Hannah Arendt', 'Michel Foucault'],
+    wiki: ['Socrates', 'Plato', 'Aristotle', 'Confucius', 'Laozi', 'Hypatia', 'Augustine of Hippo', 'Thomas Aquinas', 'Niccolò Machiavelli', 'René Descartes', 'John Locke', 'David Hume', 'Immanuel Kant', 'Georg Wilhelm Friedrich Hegel', 'Søren Kierkegaard', 'Karl Marx', 'Friedrich Nietzsche', 'Simone de Beauvoir', 'Hannah Arendt', 'Michel Foucault'],
+    cover: 'https://upload.wikimedia.org/wikipedia/commons/8/88/Plato_Silanion_Musei_Capitolini_MC1377.jpg',
+  },
+  pokemon: {
+    name: 'Pokémon', tag: 'Aventura & anime', color: '#ef5350', icon: 'sparkles',
+    names: ['Pikachu', 'Charizard', 'Bulbasaur', 'Squirtle', 'Charmander', 'Jigglypuff', 'Meowth', 'Psyduck', 'Snorlax', 'Eevee', 'Mewtwo', 'Gengar', 'Lucario', 'Greninja', 'Garchomp', 'Blaziken', 'Dragonite', 'Lapras', 'Rayquaza', 'Gardevoir'],
+    wiki: ['Pikachu', 'Charizard', 'Bulbasaur', 'Squirtle', 'Charmander', 'Jigglypuff', 'Meowth', 'Psyduck', 'Snorlax', 'Eevee', 'Mewtwo', 'Gengar', 'Lucario', 'Greninja', 'Garchomp', 'Blaziken', 'Dragonite', 'Lapras', 'Rayquaza', 'Gardevoir'],
+    cover: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png',
+  },
 };
 
 export const categories = Object.entries(entries).map(([id, entry]) => ({
