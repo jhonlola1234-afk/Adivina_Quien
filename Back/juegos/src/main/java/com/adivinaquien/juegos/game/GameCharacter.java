@@ -11,6 +11,11 @@ class GameCharacter {
     String category;
     @Column(nullable = false)
     String name;
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    byte[] imageData;
+    @Column(nullable = false)
+    String imageContentType;
 
     protected GameCharacter() {}
 
@@ -18,5 +23,7 @@ class GameCharacter {
         this.id = id;
         this.category = category;
         this.name = name;
+        this.imageData = new byte[0];
+        this.imageContentType = "image/svg+xml";
     }
 }

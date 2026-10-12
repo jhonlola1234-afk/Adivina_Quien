@@ -23,16 +23,22 @@ class GameServiceTests {
     void duplicateSecretsPrivacyAndOnlyTargetEliminated() {
         var host = create(); var second = join(host, "Luis"); var third = join(host, "Sara");
         String code = host.session().room().code();
+        String hostId = host.session().self().id();
         choose(host); choose(second); choose(third);
         var started = game.start(code, host.token());
+        String assignedTargetId = started.room().questionTargets().get(hostId);
         assertTrue(started.room().players().stream().allMatch(GameDtos.PlayerView::ready));
         assertEquals("dragon-ball-0", game.state(code, second.token()).self().secret());
         assertFalse(java.util.Arrays.stream(GameDtos.PlayerView.class.getRecordComponents()).anyMatch(field -> field.getName().equals("secret")));
-        var result = game.accuse(code, host.token(), new GameDtos.AccuseRequest(second.session().self().id(), "dragon-ball-0", started.room().revision()));
-        assertTrue(result.room().players().get(1).eliminated());
-        assertFalse(result.room().players().get(2).eliminated());
-        assertEquals(third.session().self().id(), result.room().turnId());
-        assertThrows(ResponseStatusException.class, () -> game.accuse(code, host.token(), new GameDtos.AccuseRequest(third.session().self().id(), "dragon-ball-0", started.room().revision())));
+        var result = game.accuse(code, host.token(), new GameDtos.AccuseRequest(assignedTargetId, "dragon-ball-0", started.room().revision()));
+        long eliminated = result.room().players().stream().filter(GameDtos.PlayerView::eliminated).count();
+        assertEquals(1, eliminated);
+        assertNotEquals(hostId, result.room().turnId());
+        String anotherActiveRivalId = result.room().players().stream()
+            .filter(player -> !player.id().equals(hostId) && !player.id().equals(assignedTargetId) && !player.eliminated())
+            .map(GameDtos.PlayerView::id)
+            .findFirst().orElseThrow();
+        assertThrows(ResponseStatusException.class, () -> game.accuse(code, host.token(), new GameDtos.AccuseRequest(anotherActiveRivalId, "dragon-ball-0", started.room().revision())));
     }
 
     @Test
@@ -143,5 +149,24 @@ class GameServiceTests {
             assertEquals(1, successes);
         }
         assertEquals(1, game.state(code, host.token()).room().history().size());
+    }
+
+    @Test
+    void rouletteAssignsExactlyOneRivalAndBlocksOtherTargets() {
+        var host = create(); var second = join(host, "Luis"); var third = join(host, "Sara");
+        String code = host.session().room().code();
+        choose(host); choose(second); choose(third);
+        var started = game.start(code, host.token());
+        var assignments = started.room().questionTargets();
+        assertEquals(3, assignments.size());
+        assertEquals(3, new java.util.HashSet<>(assignments.values()).size());
+        String hostId = host.session().self().id();
+        String assignedTarget = assignments.get(hostId);
+        String nonAssignedTarget = started.room().players().stream()
+            .map(GameDtos.PlayerView::id)
+            .filter(id -> !id.equals(hostId) && !id.equals(assignedTarget))
+            .findFirst().orElseThrow();
+        assertThrows(ResponseStatusException.class,
+            () -> game.accuse(code, host.token(), new GameDtos.AccuseRequest(nonAssignedTarget, "dragon-ball-0", started.room().revision())));
     }
 }

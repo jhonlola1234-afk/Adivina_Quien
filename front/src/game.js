@@ -1,7 +1,7 @@
 export const MAX_PLAYERS = 12;
 
 export function createRoom(code, category, host) {
-  return { code, category, hostId: host.id, phase: 'lobby', players: [{ ...host, eliminated: false, secret: null }], turnId: null, winnerId: null, history: [] };
+  return { code, category, hostId: host.id, phase: 'lobby', players: [{ ...host, eliminated: false, secret: null }], turnId: null, winnerId: null, history: [], questionTargets: {} };
 }
 
 export function addPlayer(room, player) {
@@ -23,7 +23,8 @@ export function startGame(room, playerId) {
   if (room.phase !== 'lobby') throw new Error('La partida ya ha comenzado.');
   if (room.players.length < 2) throw new Error('Se necesitan al menos 2 jugadores.');
   if (room.players.some(player => !player.secret)) throw new Error('Todavia hay jugadores eligiendo.');
-  return { ...room, phase: 'playing', turnId: room.players[0].id };
+  const questionTargets = Object.fromEntries(room.players.map((player, index) => [player.id, room.players[(index + 1) % room.players.length].id]));
+  return { ...room, phase: 'playing', turnId: room.players[0].id, questionTargets };
 }
 
 export function finishTurn(room, playerId) {

@@ -14,12 +14,13 @@ public final class GameDtos {
     public record AccuseRequest(@NotBlank String targetId, @NotBlank String secret, @NotNull @PositiveOrZero Long revision) {}
     public record DiscardRequest(@NotBlank String targetId, @NotBlank String characterId, @NotNull Boolean discarded) {}
     public record ResetRequest(@NotBlank String targetId) {}
-    public record CharacterView(String id, String name) {}
+    public record CharacterView(String id, String name, String image) {}
     public record CategoryView(String id, List<CharacterView> characters) {}
     public record PlayerView(String id, String name, boolean ready, boolean eliminated, boolean departed, boolean online) {}
     public record EventView(String id, String actorId, String targetId, String secret, boolean correct) {}
     public record RoomView(String code, String category, String hostId, String phase, List<PlayerView> players,
-                           String turnId, String winnerId, List<EventView> history, long revision, long turnDeadline) {}
+                           String turnId, String winnerId, List<EventView> history, long revision, long turnDeadline,
+                           Map<String, String> questionTargets) {}
     public record SelfView(String id, String name, String secret, Map<String, List<String>> discards) {}
     public record SessionView(RoomView room, SelfView self) {}
     public record EntryView(String token, SessionView session) {}

@@ -27,6 +27,9 @@ class GameRoom {
     @CollectionTable(name = "game_guesses", joinColumns = @JoinColumn(name = "room_code"))
     @OrderColumn(name = "event_index")
     List<GuessEvent> history = new ArrayList<>();
+    @ElementCollection
+    @CollectionTable(name = "game_question_targets", joinColumns = @JoinColumn(name = "room_code"))
+    List<QuestionTarget> questionTargets = new ArrayList<>();
 
     protected GameRoom() {}
 }

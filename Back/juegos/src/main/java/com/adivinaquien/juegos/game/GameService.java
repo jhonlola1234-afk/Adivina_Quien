@@ -75,6 +75,7 @@ public class GameService {
         require(room.players.size() >= 2, "Se necesitan al menos 2 jugadores.");
         require(room.players.stream().allMatch(player -> player.secret != null), "Faltan jugadores por elegir.");
         room.phase = "playing";
+        refreshQuestionTargets(room);
         room.turnId = room.players.getFirst().id;
         room.turnDeadline = System.currentTimeMillis() + TURN_MILLIS;
         touch(room);
@@ -96,12 +97,20 @@ public class GameService {
         GameMember actor = authenticate(room, token);
         expireTurn(room);
         requireTurn(room, actor, request.revision());
+        refreshQuestionTargets(room);
+        String assignedTargetId = targetFor(room, actor.id);
+        if (assignedTargetId != null) {
+            require(assignedTargetId.equals(request.targetId()), "Debes preguntar a tu rival asignado por la ruleta.");
+        }
         GameMember target = rival(room, actor, request.targetId());
         validCharacter(room, request.secret());
         boolean correct = request.secret().equals(target.secret);
         if (correct) target.eliminated = true;
         room.history.add(new GuessEvent(UUID.randomUUID().toString(), actor.id, target.id, request.secret(), correct));
-        if (!finishIfNeeded(room)) nextTurn(room, actor.id);
+        if (!finishIfNeeded(room)) {
+            refreshQuestionTargets(room);
+            nextTurn(room, actor.id);
+        }
         touch(room);
         return snapshot(room, actor);
     }
@@ -136,6 +145,7 @@ public class GameService {
             actor.departed = true;
             actor.eliminated = true;
             actor.tokenHash = "revoked";
+            if (room.phase.equals("playing")) refreshQuestionTargets(room);
             if (room.phase.equals("playing") && !finishIfNeeded(room) && actor.id.equals(room.turnId)) nextTurn(room, actor.id);
         }
         if (actor.id.equals(room.hostId)) {
@@ -159,6 +169,7 @@ public class GameService {
         room.turnId = null;
         room.winnerId = null;
         room.turnDeadline = 0;
+        room.questionTargets.clear();
         touch(room);
         return snapshot(room, actor);
     }
@@ -246,16 +257,58 @@ public class GameService {
         room.updatedAt = System.currentTimeMillis();
     }
 
+    private void refreshQuestionTargets(GameRoom room) {
+        List<GameMember> active = activePlayers(room);
+        if (active.size() < 2) {
+            room.questionTargets.clear();
+            return;
+        }
+        Set<String> activeIds = active.stream().map(player -> player.id).collect(java.util.stream.Collectors.toSet());
+        if (hasValidQuestionTargets(room, activeIds)) return;
+        room.questionTargets.clear();
+        List<GameMember> wheel = new ArrayList<>(active);
+        Collections.shuffle(wheel, RANDOM);
+        for (int index = 0; index < wheel.size(); index++) {
+            GameMember actor = wheel.get(index);
+            GameMember target = wheel.get((index + 1) % wheel.size());
+            room.questionTargets.add(new QuestionTarget(actor.id, target.id));
+        }
+    }
+
+    private static boolean hasValidQuestionTargets(GameRoom room, Set<String> activeIds) {
+        if (room.questionTargets.size() != activeIds.size()) return false;
+        Set<String> seenActors = new HashSet<>();
+        Set<String> seenTargets = new HashSet<>();
+        for (QuestionTarget target : room.questionTargets) {
+            if (!activeIds.contains(target.actorId) || !activeIds.contains(target.targetId)) return false;
+            if (target.actorId.equals(target.targetId)) return false;
+            if (!seenActors.add(target.actorId)) return false;
+            if (!seenTargets.add(target.targetId)) return false;
+        }
+        return seenActors.equals(activeIds) && seenTargets.equals(activeIds);
+    }
+
+    private String targetFor(GameRoom room, String actorId) {
+        for (QuestionTarget target : room.questionTargets) if (target.actorId.equals(actorId)) return target.targetId;
+        return null;
+    }
+
+    private static List<GameMember> activePlayers(GameRoom room) {
+        return room.players.stream().filter(player -> !player.eliminated && !player.departed).toList();
+    }
+
     private GameDtos.SessionView snapshot(GameRoom room, GameMember actor) {
         long now = System.currentTimeMillis();
         var players = room.players.stream().map(player -> new GameDtos.PlayerView(player.id, player.name,
             player.secret != null, player.eliminated, player.departed, !player.departed && now - player.lastSeen < 30_000)).toList();
         var history = room.history.stream().skip(Math.max(0, room.history.size() - 100))
             .map(event -> new GameDtos.EventView(event.id, event.actorId, event.targetId, event.secret, event.correct)).toList();
+        Map<String, String> questionTargets = new LinkedHashMap<>();
+        for (QuestionTarget target : room.questionTargets) questionTargets.put(target.actorId, target.targetId);
         Map<String, List<String>> discards = new LinkedHashMap<>();
         for (PrivateDiscard discard : actor.discards) discards.computeIfAbsent(discard.targetId, key -> new ArrayList<>()).add(discard.characterId);
         var publicRoom = new GameDtos.RoomView(room.code, room.category, room.hostId, room.phase, players,
-            room.turnId, room.winnerId, history, room.revision, room.turnDeadline);
+            room.turnId, room.winnerId, history, room.revision, room.turnDeadline, questionTargets);
         return new GameDtos.SessionView(publicRoom, new GameDtos.SelfView(actor.id, actor.name, actor.secret, discards));
     }
 

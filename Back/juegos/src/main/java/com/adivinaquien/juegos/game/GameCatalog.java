@@ -37,6 +37,6 @@ public class GameCatalog implements ApplicationRunner {
         return NAMES.keySet().stream().sorted().map(category -> new GameDtos.CategoryView(category,
             characters.findAllByCategory(category).stream()
                 .sorted(java.util.Comparator.comparingInt(character -> Integer.parseInt(character.id.substring(category.length() + 1))))
-                .map(character -> new GameDtos.CharacterView(character.id, character.name)).toList())).toList();
+                .map(character -> new GameDtos.CharacterView(character.id, character.name, null)).toList())).toList();
     }
 }
