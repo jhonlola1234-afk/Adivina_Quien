@@ -67,7 +67,7 @@ class GameHttpTests {
         assertEquals(409, send("POST", "/rooms", null, "{\"name\":\"Ana\",\"category\":\"unknown\"}").statusCode());
         JsonNode categories = mapper.readTree(send("GET", "/categories", null, null).body());
         assertEquals(8, categories.size());
-        for (JsonNode category : categories) assertEquals(20, category.get("characters").size());
+        for (JsonNode category : categories) assertEquals(30, category.get("characters").size());
         String serialized = categories.toString();
         assertTrue(serialized.contains("series-infantiles"));
         assertTrue(serialized.contains("filosofos"));

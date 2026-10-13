@@ -209,7 +209,20 @@ public class GameService {
     }
 
     private void validCharacter(GameRoom room, String id) {
-        require(id != null && characters.existsByIdAndCategory(id, room.category), "El personaje no pertenece a la categoria.");
+        require(id != null && inCatalog(room.category, id), "El personaje no pertenece a la categoria.");
+    }
+
+    private static boolean inCatalog(String category, String id) {
+        List<String> names = GameCatalog.NAMES.get(category);
+        if (names == null) return false;
+        String prefix = category + "-";
+        if (!id.startsWith(prefix)) return false;
+        try {
+            int index = Integer.parseInt(id.substring(prefix.length()));
+            return index >= 0 && index < names.size();
+        } catch (NumberFormatException exception) {
+            return false;
+        }
     }
 
     private GameMember rival(GameRoom room, GameMember actor, String targetId) {

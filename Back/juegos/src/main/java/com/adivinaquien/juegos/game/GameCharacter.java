@@ -14,7 +14,7 @@ class GameCharacter {
     @Lob
     @Basic(fetch = FetchType.LAZY)
     byte[] imageData;
-    @Column(nullable = false)
+    @Column
     String imageContentType;
 
     protected GameCharacter() {}
